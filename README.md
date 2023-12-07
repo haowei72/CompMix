@@ -42,7 +42,7 @@ Results include exposures and covariates that are selected and their coefficient
 
 The users would like to perform variable selections on main effects of exposures and covariates, interactions among exposures. Outcome, exposures, and covariates are entered.  If the users would like to test interactions between certain covariate(s) and all the chemicals, they can move the covariate(s) from z to x. For any individual interactions that the users would like to include in the models, they can add those into the covariate(s) z.
 ```{r}
-ex2 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = TRUE, covariates.forcein = FALSE, pip=0.5)
+ex2 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = TRUE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures, interactions and covariates that are selected and their coefficients  by Lasso and Elastic-net, as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
 
@@ -51,7 +51,7 @@ Results include exposures, interactions and covariates that are selected and the
 
 The users would like to perform variable selections on all main effects of exposures, and covariates, and all interactions among exposures and covariates. Outcome and exposures are entered, and covariates are blank, and the exposures x include all the covariates.  
 ```{r}
-ex3 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction.exp.cov=TRUE, covariates.forcein = False, pip=0.5)
+ex3 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction.exp.cov=TRUE, covariates.forcein = False, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures and covariates, and their interactions that are selected by Lasso and Elastic-net, HierNet and SNIF. Coefficients for the selected terms by Lasso and Enet. Sum-squared errors and correlations calculated from the testing data for model comparisons.
 
@@ -60,7 +60,7 @@ Results include exposures and covariates, and their interactions that are select
 
 The users would like to perform variable selections on all main effects of exposures, while adjusting for covariates. Outcome, exposures, and covariates are entered. For any individual interactions that the users would like to adjust in the models, they can add those into the covariates z. 
 ```{r}
-ex4 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = FALSE, covariates.forcein = TRUE, pip=0.5)
+ex4 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = FALSE, covariates.forcein = TRUE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures that are selected and their coefficients by Lasso and Elastic-net, exposures that are selected by BKMR, coefficients of covariates by Lasso and Elastic-net,  as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
 
@@ -69,7 +69,7 @@ Results include exposures that are selected and their coefficients by Lasso and 
 
 The users would like to perform variable selections on all main and interactions effects of exposures, while adjusting for covariates. Outcome, exposures, and covariates are entered. For any individual interactions that the users would like to adjust in the models, they can add those into the covariates z.
 ```{r}
-ex5 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = TRUE, covariates.forcein = TRUE, pip=0.5)
+ex5 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = TRUE, covariates.forcein = TRUE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures and exposure interactions that are selected and their coefficients by Lasso and Elastic-net, covariate coefficient estimated by Lasso and Elastic-net. Sum-squared errors and correlations calculated from the testing data for model comparisons.
 
@@ -77,8 +77,24 @@ Results include exposures and exposure interactions that are selected and their 
 
 The users would like to rank the importance of exposure variables, while adjusting for covariates. Outcome, exposures, and covariates are entered. For any individual interactions that the users would like to adjust in the models, they can add those into the covariates z.
 ```{r}
-ex5 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = FALSE, interaction = FALSE, covariates.forcein = TRUE, pip=0.5)
+ex6 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = FALSE, interaction = FALSE, covariates.forcein = TRUE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposure ranking and mixture effect by WQS, positive and negative exposure effects and mixture effect by Q-gcomp. Sum-squared errors and correlations calculated from the testing data for model comparisons.
+
+* **Example 7**
+
+The users would like to rank the importance of exposure variables and covariates that are entered.  Interactions or other nonlinearity are accounted implicitly meaning that we would not know the selection of the any variables. 
+```{r}
+ex7 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = FALSE, interaction = FALSE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
+```
+Results include ranking of the exposures and covariates by random forest as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
+
+* **Example 8**
+
+The users would like to perform variable selections on main effects of exposures.  Outcome and exposures are entered while covariates are blank.
+```{r}
+ex8 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = FALSE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
+```
+Results include exposures that are selected and their coefficients  by Lasso and Elastic-net, exposures that are selected by BKMR, as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
 
   ```
