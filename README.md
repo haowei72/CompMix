@@ -39,4 +39,6 @@ res_ex1 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, 
 Results include exposures and covariates that are selected and their coefficients  by Lasso and Elastic-net, as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
 
 
+
+
   ```
