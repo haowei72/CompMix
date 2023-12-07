@@ -1,6 +1,6 @@
 # CompMix
 
-**A comprehensive toolkit for environmental mixtures analysis
+## A comprehensive toolkit for environmental mixtures analysis
 
 * **Install all the dependency R packages**
 ```{r}
