@@ -30,7 +30,7 @@ library(CompMix)
   ```
 
 
-* **Example**
+* **Example 1**
 
 The users would like to perform variable selections on main effects of exposures and covariates, and outcome, exposures and covariates are entered. For any individual interactions that the users would like to include in the models, they can add those into the covariate z.
 ```{r}
