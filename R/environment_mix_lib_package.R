@@ -265,10 +265,10 @@ simple_lasso_real_force <- function(x, y, z, ...) {
     )
   return(
     list(
-      betaest = res$beta[1:ncol(x)],
+      betaest = res$beta[1:ncol(x),1,drop=FALSE],
       select_idx = which(res$beta[1:ncol(x)] != 0),
       lambda = cv_res$lambda.min,
-      z_betaest = res$beta[ncol(x) + 1:ncol(z)],
+      z_betaest = res$beta[ncol(x) + 1:ncol(z),1,drop=FALSE],
       lasso_fit = res
     )
   )
@@ -519,15 +519,15 @@ simple_hiernet <- function(x, y, binary = FALSE, ...) {
   elapsed <- proc.time()[3]
   y = as.numeric(y)
   if (binary == FALSE) {
-    fit = hierNet.path(x = x, y = y)
-    fitcv = hierNet.cv(fit, x = x, y = y)
+    capture.output(fit <- hierNet.path(x = x, y = y),file=nullfile())
+    capture.output(fitcv <- hierNet.cv(fit, x = x, y = y),file=nullfile())
     lamhat = fitcv$lamhat
-    fit2 = hierNet(x, y, lam = lamhat)
+    capture.output(fit2 <- hierNet(x, y, lam = lamhat),file=nullfile())
   } else {
-    fit = hierNet.logistic.path(x = x, y = y)
-    fitcv = hierNet.cv(fit, x = x, y = y)
+    capture.output(fit <- hierNet.logistic.path(x = x, y = y),file=nullfile())
+    capture.output(fitcv <- hierNet.cv(fit, x = x, y = y),file=nullfile())
     lamhat = fitcv$lamhat
-    fit2 = hierNet.logistic(x, y, lam = lamhat)
+    capture.output(fit2 <- hierNet.logistic(x, y, lam = lamhat),file=nullfile())
   }
   #main effects
   main_effect = fit2$bp - fit2$bn  #main effects estimated from fit2
@@ -1310,7 +1310,7 @@ Comp.Mix <- function(y,
   if (var.select == T &
       interaction == F &
       covariates.forcein == F & is.null(z) == F) {
-    case_nm = "variable selection on main effects for exposures and confounders"
+    case_nm = "case 1: variable selection on main effects for exposures and confounders"
     cat(case_nm, "\n")
 
     if (is.null(input.method)) {
@@ -1364,6 +1364,11 @@ Comp.Mix <- function(y,
                                  sse = sse,
                                  corr = corr)
 
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
+
   }
 
   #############################################################
@@ -1377,7 +1382,7 @@ Comp.Mix <- function(y,
   #example 2: variable selection on xi and z (null/non-null)
   if (var.select == T &
       interaction == T & covariates.forcein == F) {
-    case_nm = "variable selection on main and interaction effects for exposures and main effects for confounders"
+    case_nm = "case 2: variable selection on main and interaction effects for exposures and main effects for confounders"
     cat(case_nm, "\n")
 
     if (is.null(input.method)) {
@@ -1429,6 +1434,11 @@ Comp.Mix <- function(y,
                                  sse = sse,
                                  corr = corr)
 
+
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
   }
 
 
@@ -1444,7 +1454,7 @@ Comp.Mix <- function(y,
   if (var.select == T &
       interaction.exp.cov == T & covariates.forcein == F &
       is.null(z) == F) {
-    case_nm = "variable selection on main and interaction effects among exposures and confounders"
+    case_nm = "case 3: variable selection on main and interaction effects among exposures and confounders"
     cat(case_nm, "\n")
 
 
@@ -1501,7 +1511,7 @@ Comp.Mix <- function(y,
     if (is.element("hiernet", method)) {
       cat("Fitting hiernet ... ", "\n")
       #3.3 hiernet fitting and prediction
-      hiernet_res = with(train_dat, simple_hiernet(x.z, y))
+      hiernet_res = with(train_dat, simple_hiernet(x.z, y, trace=0))
 
       hiernet_pre = predict(hiernet_res$hiernet_fit, newx = test_dat$x.z)
       hiernet_sse = mean((hiernet_pre - test_dat$y) ^ 2)
@@ -1542,6 +1552,10 @@ Comp.Mix <- function(y,
                                  sse = sse,
                                  corr = corr)
 
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
   }
 
 
@@ -1557,11 +1571,12 @@ Comp.Mix <- function(y,
   if (var.select == T &
       interaction == F &
       covariates.forcein == T & is.null(z) == F) {
-    case_nm = "variable selection on main effects for exposures while controlling for confounders"
+    case_nm = "case 4: variable selection on main effects for exposures while controlling for confounders"
     cat(case_nm, "\n")
 
     #output results
     betaest = list()
+    z_betaest = list()
     sse = c()
     corr = c()
 
@@ -1583,10 +1598,10 @@ Comp.Mix <- function(y,
         lasso_corr = 0
       }
 
-      betaest$lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1]
-      names(betaest$lasso) = colnames(train_dat$x)[lasso_res$betaest != 0]
+      betaest$lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1,drop=FALSE]
+  #    names(betaest$lasso) = colnames(train_dat$x)[lasso_res$betaest != 0]
       z_betaest$lasso=lasso_res$z_betaest
-      names(z_betaest$lasso) = colnames(train_dat$z)
+    #  names(z_betaest$lasso) = colnames(train_dat$z)
       sse = c(sse, lasso = lasso_sse)
       corr = c(corr, lasso = lasso_corr)
     }
@@ -1603,10 +1618,10 @@ Comp.Mix <- function(y,
         enet_corr = 0
       }
 
-      betaest$enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1]
-      names( betaest$enet) = colnames(train_dat$x)[enet_res$betaest != 0]
+      betaest$enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1,drop=FALSE]
+    #  names( betaest$enet) = colnames(train_dat$x)[enet_res$betaest != 0]
       z_betaest$enet=enet_res$z_betaest
-      names(z_betaest$enet) = colnames(train_dat$z)
+     # names(z_betaest$enet) = colnames(train_dat$z)
       sse = c(sse, enet = enet_sse)
       corr = c(corr, enet = enet_corr)
     }
@@ -1642,19 +1657,19 @@ Comp.Mix <- function(y,
     #output results
     # lasso_beta = lasso_res$betaest[lasso_res$betaest != 0]
     # names(lasso_beta) = colnames(train_dat$x)[lasso_res$betaest != 0]
-    # 
+    #
     # enet_beta = enet_res$betaest[enet_res$betaest != 0]
     # names(enet_beta) = colnames(train_dat$x)[enet_res$betaest != 0]
-    # 
+    #
     # names(lasso_res$z_betaest) = colnames(train_dat$z)
     # names(enet_res$z_betaest) = colnames(train_dat$z)
-    # 
+    #
     # betaest = list(lasso = lasso_beta,
     #                enet = enet_beta,
     #                bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1])
     # z_betaest = list(lasso = lasso_res$z_betaest,
     #                  enet = enet_res$z_betaest)
-    # 
+    #
     # sse = c(lasso = lasso_sse,
     #         enet = enet_sse,
     #         bkmr = bkmr_sse)
@@ -1669,6 +1684,11 @@ Comp.Mix <- function(y,
       sse = sse,
       corr = corr
     )
+
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
 
   }
 
@@ -1685,7 +1705,7 @@ Comp.Mix <- function(y,
   if (var.select == T &
       interaction == T &
       covariates.forcein == T & is.null(z) == F) {
-    case_nm = "variable selection on main and interaction effects for exposures while controlling for confounders"
+    case_nm = "case 5: variable selection on main and interaction effects for exposures while controlling for confounders"
     cat(case_nm, "\n")
 
 
@@ -1694,6 +1714,12 @@ Comp.Mix <- function(y,
     } else{
       method = input.method
     }
+
+    #output results
+    betaest = list()
+    z_betaest = list()
+    sse = c()
+    corr = c()
 
     if (is.element("lasso", method)) {
       cat("Fitting lasso ... ", "\n")
@@ -1707,6 +1733,14 @@ Comp.Mix <- function(y,
       } else {
         lasso_corr = 0
       }
+
+      betaest$lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1,drop=FALSE]
+      #    names(betaest$lasso) = colnames(train_dat$x)[lasso_res$betaest != 0]
+      z_betaest$lasso=lasso_res$z_betaest
+      #  names(z_betaest$lasso) = colnames(train_dat$z)
+      sse = c(sse, lasso = lasso_sse)
+      corr = c(corr, lasso = lasso_corr)
+
     }
 
     if (is.element("enet", method)) {
@@ -1721,23 +1755,30 @@ Comp.Mix <- function(y,
       } else {
         enet_corr = 0
       }
+
+      betaest$enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1,drop=FALSE]
+      #  names( betaest$enet) = colnames(train_dat$x)[enet_res$betaest != 0]
+      z_betaest$enet=enet_res$z_betaest
+      # names(z_betaest$enet) = colnames(train_dat$z)
+      sse = c(sse, enet = enet_sse)
+      corr = c(corr, enet = enet_corr)
     }
 
     #output results
-    lasso_beta = lasso_res$betaest[lasso_res$betaest != 0]
-    names(lasso_beta) = colnames(train_dat$x)[lasso_res$betaest != 0]
+    # lasso_beta = lasso_res$betaest[lasso_res$betaest != 0]
+    # names(lasso_beta) = colnames(train_dat$x)[lasso_res$betaest != 0]
+    #
+    # enet_beta = enet_res$betaest[enet_res$betaest != 0]
+    # names(enet_beta) = colnames(train_dat$x)[enet_res$betaest != 0]
+    #
+    # names(lasso_res$z_betaest) = colnames(train_dat$z)
+    # names(enet_res$z_betaest) = colnames(train_dat$z)
 
-    enet_beta = enet_res$betaest[enet_res$betaest != 0]
-    names(enet_beta) = colnames(train_dat$x)[enet_res$betaest != 0]
-
-    names(lasso_res$z_betaest) = colnames(train_dat$z)
-    names(enet_res$z_betaest) = colnames(train_dat$z)
-
-    betaest = list(lasso = lasso_beta, enet = enet_beta)
-    z_betaest = list(lasso = lasso_res$z_betaest,
-                     enet = enet_res$z_betaest)
-    sse = c(lasso = lasso_sse, enet = enet_sse)
-    corr = c(lasso = lasso_corr, enet = enet_corr)
+    # betaest = list(lasso = lasso_beta, enet = enet_beta)
+    # z_betaest = list(lasso = lasso_res$z_betaest,
+    #                  enet = enet_res$z_betaest)
+    # sse = c(lasso = lasso_sse, enet = enet_sse)
+    # corr = c(lasso = lasso_corr, enet = enet_corr)
 
     method_res[[case_nm]] = list(
       betaest = betaest,
@@ -1745,6 +1786,11 @@ Comp.Mix <- function(y,
       sse = sse,
       corr = corr
     )
+
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
 
   }
 
@@ -1760,7 +1806,7 @@ Comp.Mix <- function(y,
   if (var.select == F &
       interaction == F &
       covariates.forcein == T & is.null(z) == F) {
-    case_nm = "estimating mixtures effects without variable selection while controlling for confounders"
+    case_nm = "case 6: estimating mixtures effects without variable selection while controlling for confounders"
     cat(case_nm, "\n")
 
 
@@ -1769,6 +1815,12 @@ Comp.Mix <- function(y,
     } else{
       method = input.method
     }
+
+    #output results
+    betaest = list()
+    mixture.coef = list()
+    sse = c()
+    corr = c()
 
     if (is.element("wqs", method)) {
       cat("Fitting wqs ... ", "\n")
@@ -1779,6 +1831,11 @@ Comp.Mix <- function(y,
       wqs_full_pre = wqs_full_pred$df_pred$ypred
       wqs_full_sse = mean((wqs_full_pre - test_dat$y) ^ 2)
       wqs_full_corr = cor(wqs_full_pre, test_dat$y)
+
+      betaest$wqs = wqs_full_res$wqs_fit$final_weights
+      mixture.coef$wqs = summary(wqs_full_res$wqs_fit)$coef
+      sse = c(sse, wqs = wqs_full_sse)
+      corr = c(corr, wqs = wqs_full_corr)
     }
 
     if (is.element("qgcomp", method)) {
@@ -1790,17 +1847,23 @@ Comp.Mix <- function(y,
       gcomp_full_pre = predict(gcomp_full_res$gcomp_fit, newdata = gcomp_test_full_dat)
       gcomp_full_sse = mean((gcomp_full_pre - test_dat$y) ^ 2)
       gcomp_full_corr = cor(gcomp_full_pre, test_dat$y)
+
+      betaest$gcomp = gcomp_full_res$gcomp_fit
+      mixture.coef$gcomp = summary(gcomp_full_res$gcomp_fit)$coef
+
+      sse = c(sse, gcomp = gcomp_full_sse)
+      corr = c(corr, gcomp = gcomp_full_corr)
     }
 
     #output results
-    betaest = list(wqs = wqs_full_res$wqs_fit$final_weights,
-                   gcomp = gcomp_full_res$gcomp_fit)
-    mixture.coef = list(
-      wqs = summary(wqs_full_res$wqs_fit)$coef,
-      gcomp = summary(gcomp_full_res$gcomp_fit)$coef
-    )
-    sse = c(wqs = wqs_full_sse, gcomp = gcomp_full_sse)
-    corr = c(wqs = wqs_full_corr, gcomp = gcomp_full_corr)
+    # betaest = list(wqs = wqs_full_res$wqs_fit$final_weights,
+    #                gcomp = gcomp_full_res$gcomp_fit)
+    # mixture.coef = list(
+    #   wqs = summary(wqs_full_res$wqs_fit)$coef,
+    #   gcomp = summary(gcomp_full_res$gcomp_fit)$coef
+    # )
+    # sse = c(wqs = wqs_full_sse, gcomp = gcomp_full_sse)
+    # corr = c(wqs = wqs_full_corr, gcomp = gcomp_full_corr)
 
     method_res[[case_nm]] = list(
       betaest = betaest,
@@ -1808,6 +1871,11 @@ Comp.Mix <- function(y,
       sse = sse,
       corr = corr
     )
+
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
 
   }
 
@@ -1822,7 +1890,7 @@ Comp.Mix <- function(y,
   #example 7: no variable selection and no controlling for z (random forest)
   if (var.select == F &
       interaction == F & covariates.forcein == F) {
-    case_nm = "importance ranking among exposures and confounders"
+    case_nm = "case 7: importance ranking among exposures and confounders"
     cat(case_nm, "\n")
 
 
@@ -1831,6 +1899,8 @@ Comp.Mix <- function(y,
     } else{
       method = input.method
     }
+
+    ranking = NULL
 
     if (is.element("rf", method)) {
       cat("Fitting rf ... ", "\n")
@@ -1849,7 +1919,10 @@ Comp.Mix <- function(y,
     method_res[[case_nm]] = list(ranking =
                                    ranking)
 
-
+    if(length(ranking)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
   }
 
 
@@ -1866,8 +1939,10 @@ Comp.Mix <- function(y,
   if (var.select == T &
       interaction == F &
       covariates.forcein == F & is.null(z) == T) {
-    case_nm = "variable selection on main effects without input confounders"
+    case_nm = "case 8: variable selection on main effects without input confounders"
     cat(case_nm, "\n")
+
+
 
 
     if (is.null(input.method)) {
@@ -1875,6 +1950,11 @@ Comp.Mix <- function(y,
     } else{
       method = input.method
     }
+
+    #output results
+    betaest = list()
+    sse = c()
+    corr = c()
 
     if (is.element("lasso", method)) {
       cat("Fitting lasso ... ", "\n")
@@ -1887,6 +1967,11 @@ Comp.Mix <- function(y,
       } else {
         lasso_corr = 0
       }
+
+      betaest$lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1,drop=FALSE]
+      sse = c(sse, lasso = lasso_sse)
+      corr = c(corr, lasso = lasso_corr)
+
     }
 
     if (is.element("enet", method)) {
@@ -1900,6 +1985,11 @@ Comp.Mix <- function(y,
       } else {
         enet_corr = 0
       }
+
+      betaest$enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1,drop=FALSE]
+
+      sse = c(sse, enet = enet_sse)
+      corr = c(corr, enet = enet_corr)
     }
 
     if (is.element("bkmr", method)) {
@@ -1920,26 +2010,35 @@ Comp.Mix <- function(y,
       } else {
         bkmr_corr = 0
       }
+
+      betaest$bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1]
+      sse = c(sse, bkmr = bkmr_sse)
+      corr = c(corr, bkmr = bkmr_corr)
     }
 
     #output results
-    betaest = list(
-      lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1],
-      enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1],
-      bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1]
-    )
-    sse = c(lasso = lasso_sse,
-            enet = enet_sse,
-            bkmr = bkmr_sse)
-    corr = c(lasso = lasso_corr,
-             enet = enet_corr,
-             bkmr = bkmr_corr)
+    # betaest = list(
+    #   lasso = lasso_res$betaest[lasso_res$betaest[, 1] != 0, 1],
+    #   enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1],
+    #   bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1]
+    # )
+    # sse = c(lasso = lasso_sse,
+    #         enet = enet_sse,
+    #         bkmr = bkmr_sse)
+    # corr = c(lasso = lasso_corr,
+    #          enet = enet_corr,
+    #          bkmr = bkmr_corr)
 
 
     method_res[[case_nm]] = list(betaest =
                                    betaest,
                                  sse = sse,
                                  corr = corr)
+
+    if(length(betaest)==0){
+      for(mm in 1:length(method))
+        cat(method[mm],"is not available for this case!\n")
+    }
   }
 
   #
