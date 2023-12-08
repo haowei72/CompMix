@@ -1604,7 +1604,9 @@ Comp.Mix <- function(y,
       }
 
       betaest$enet = enet_res$betaest[enet_res$betaest[, 1] != 0, 1]
+      names( betaest$enet) = colnames(train_dat$x)[enet_res$betaest != 0]
       z_betaest$enet=enet_res$z_betaest
+      names(z_betaest$enet) = colnames(train_dat$z)
       sse = c(sse, enet = enet_sse)
       corr = c(corr, enet = enet_corr)
     }
@@ -1638,27 +1640,27 @@ Comp.Mix <- function(y,
     }
 
     #output results
-    lasso_beta = lasso_res$betaest[lasso_res$betaest != 0]
-    names(lasso_beta) = colnames(train_dat$x)[lasso_res$betaest != 0]
-
-    enet_beta = enet_res$betaest[enet_res$betaest != 0]
-    names(enet_beta) = colnames(train_dat$x)[enet_res$betaest != 0]
-
-    names(lasso_res$z_betaest) = colnames(train_dat$z)
-    names(enet_res$z_betaest) = colnames(train_dat$z)
-
-    betaest = list(lasso = lasso_beta,
-                   enet = enet_beta,
-                   bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1])
-    z_betaest = list(lasso = lasso_res$z_betaest,
-                     enet = enet_res$z_betaest)
-
-    sse = c(lasso = lasso_sse,
-            enet = enet_sse,
-            bkmr = bkmr_sse)
-    corr = c(lasso = lasso_corr,
-             enet = enet_corr,
-             bkmr = bkmr_corr)
+    # lasso_beta = lasso_res$betaest[lasso_res$betaest != 0]
+    # names(lasso_beta) = colnames(train_dat$x)[lasso_res$betaest != 0]
+    # 
+    # enet_beta = enet_res$betaest[enet_res$betaest != 0]
+    # names(enet_beta) = colnames(train_dat$x)[enet_res$betaest != 0]
+    # 
+    # names(lasso_res$z_betaest) = colnames(train_dat$z)
+    # names(enet_res$z_betaest) = colnames(train_dat$z)
+    # 
+    # betaest = list(lasso = lasso_beta,
+    #                enet = enet_beta,
+    #                bkmr = colnames(train_dat$x)[bkmr_res$betaest == 1])
+    # z_betaest = list(lasso = lasso_res$z_betaest,
+    #                  enet = enet_res$z_betaest)
+    # 
+    # sse = c(lasso = lasso_sse,
+    #         enet = enet_sse,
+    #         bkmr = bkmr_sse)
+    # corr = c(lasso = lasso_corr,
+    #          enet = enet_corr,
+    #          bkmr = bkmr_corr)
 
 
     method_res[[case_nm]] = list(
