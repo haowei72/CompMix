@@ -1237,7 +1237,7 @@ create_inter_x <- function(x) {
 #'#Example 1: The users would like to perform variable selections on main effects of exposures and covariates, and outcome, exposures and covariates are entered. For any individual interactions that the users would like to include in the models, they can add those into the covariate z.
 #'res_ex1 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = FALSE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
 #'#Results include exposures and covariates that are selected and their coefficients  by Lasso and Elastic-net, as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
-#'
+#'#Example 2:
 #'
 #'
 #'@export
