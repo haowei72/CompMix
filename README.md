@@ -57,7 +57,7 @@ Results include exposures, interactions and covariates that are selected and the
 
 The users would like to perform variable selections on all main effects of exposures, and covariates, and all interactions among exposures and covariates. Outcome and exposures are entered, and covariates are blank, and the exposures x include all the covariates.  
 ```{r}
-ex3 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction.exp.cov=TRUE, covariates.forcein = False, bkmr.pip=0.5, seed=2023)
+ex3 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction.exp.cov=TRUE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures and covariates, and their interactions that are selected by Lasso and Elastic-net, HierNet and SNIF. Coefficients for the selected terms by Lasso and Enet. Sum-squared errors and correlations calculated from the testing data for model comparisons.
 
