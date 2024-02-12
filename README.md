@@ -2,6 +2,9 @@
 
 ## A comprehensive toolkit for environmental mixtures analysis
 
+* **Please make sure you have installed JAVA on your computer.If not please visit www.java.com**
+
+
 * **Install all the dependency R packages**
 ```{r}
 install.packages(c("mvtnorm","igraph","glmnet","gglasso","higlasso",
