@@ -324,7 +324,7 @@ simple_enet_real_force <- function(x, y, z, alpha = 0.5, ...) {
     )
   return(
     list(
-      betaest = res$beta[1:ncol(x)],
+      betaest = res$beta[1:ncol(x),1,drop=FALSE],
       select_idx = which(res$beta[1:ncol(x)] != 0),
       lambda = cv_res$lambda.min,
       z_betaest = res$beta[ncol(x) + 1:ncol(z)],
@@ -335,7 +335,7 @@ simple_enet_real_force <- function(x, y, z, alpha = 0.5, ...) {
 
 
 #bkmr
-simple_bkmr <- function(x, y, varsel, iter = 2000, ...) {
+simple_bkmr <- function(x, y,pip, varsel, iter = 2000, ...) {
   elapsed <- proc.time()[3]
   kmsel = kmbayes(
     y = y,
@@ -347,7 +347,7 @@ simple_bkmr <- function(x, y, varsel, iter = 2000, ...) {
   )
   if (varsel == TRUE) {
     PIP = ExtractPIPs(kmsel)
-    betaest = ifelse(PIP[, 2] >= 0.50, 1, 0)
+    betaest = ifelse(PIP[, 2] >= pip, 1, 0)
     select_idx = which(betaest == 1)
     if (length(select_idx) > 0) {
       kmsel = kmbayes(
@@ -1243,8 +1243,8 @@ create_inter_x <- function(x) {
 #'@export
 Comp.Mix <- function(y,
                      x,
-                     z,
-                     y.type,
+                     z = NULL,
+                     y.type = NULL,
                      test.pct = 0.5,
                      var.select = NULL,
                      interaction = NULL,
@@ -1261,6 +1261,17 @@ Comp.Mix <- function(y,
   input.interaction.exp.cov = interaction.exp.cov
   input.covariates.forcein = covariates.forcein
   input.method = method
+
+  if (is.null(input.var.select))
+    var.select = T
+  if (is.null(input.interaction))
+    interaction = F
+  if (is.null(input.covariates.forcein))
+    covariates.forcein = F
+  if (is.null(input.interaction.exp.cov))
+    interaction.exp.cov = F
+
+
 
   #create interactions and split the data into training/testing
   set.seed(seed = seed)
@@ -1299,17 +1310,13 @@ Comp.Mix <- function(y,
 
 
   #example 1: variable selection on x, z
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction))
-    interaction = F
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = F
+
 
 
   if (var.select == T &
       interaction == F &
-      covariates.forcein == F & is.null(z) == F) {
+      covariates.forcein == F &
+      interaction.exp.cov == F & is.null(z) == F) {
     case_nm = "case 1: variable selection on main effects for exposures and confounders"
     cat(case_nm, "\n")
 
@@ -1372,12 +1379,7 @@ Comp.Mix <- function(y,
   }
 
   #############################################################
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction))
-    interaction = T
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = F
+
 
   #example 2: variable selection on xi and z (null/non-null)
   if (var.select == T &
@@ -1443,17 +1445,12 @@ Comp.Mix <- function(y,
 
 
   #############################################################
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction.exp.cov))
-    interaction.exp.cov = T
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = F
+
 
   #example 3: variable selection on xzi
   if (var.select == T &
       interaction.exp.cov == T & covariates.forcein == F &
-      is.null(z) == F) {
+      is.null(z) == F ) {
     case_nm = "case 3: variable selection on main and interaction effects among exposures and confounders"
     cat(case_nm, "\n")
 
@@ -1560,12 +1557,7 @@ Comp.Mix <- function(y,
 
 
   #############################################################
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction))
-    interaction = F
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = T
+
 
   # example 4: variable selection on x while controlling for z
   if (var.select == T &
@@ -1694,12 +1686,7 @@ Comp.Mix <- function(y,
 
 
   #############################################################
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction))
-    interaction = T
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = T
+
 
   #example 5: variable selection on xi while controlling for z
   if (var.select == T &
@@ -1927,12 +1914,7 @@ Comp.Mix <- function(y,
 
 
   #############################################################
-  if (is.null(input.var.select))
-    var.select = T
-  if (is.null(input.interaction))
-    interaction = F
-  if (is.null(input.covariates.forcein))
-    covariates.forcein = F
+
 
   #when z is null
   #example 8: variable selection on x
@@ -1941,8 +1923,6 @@ Comp.Mix <- function(y,
       covariates.forcein == F & is.null(z) == T) {
     case_nm = "case 8: variable selection on main effects without input confounders"
     cat(case_nm, "\n")
-
-
 
 
     if (is.null(input.method)) {
