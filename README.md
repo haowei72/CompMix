@@ -23,6 +23,8 @@ devtools::install_github("haowei72/CompMix")
 library(CompMix)
 ```
 
+
+
 * **Overview**
 
  The users input the dataset consisting of outcome variable y, exposure variables x and covariates z, and specify test.pct to randomly split the dataset into training and testing datasets. By specifying interaction=TRUE, the Comp.Mix automatically calculates all the pairwise interactions among exposure variables. For users who wish to explore the interaction effects among some covariates and exposures, they can do so by including the specific covariates into the exposure variables x. 
@@ -37,6 +39,7 @@ library(CompMix)
 
 The users would like to perform variable selections on main effects of exposures and covariates, and outcome, exposures and covariates are entered. For any individual interactions that the users would like to include in the models, they can add those into the covariate z.
 ```{r}
+library(splines) # need to load splines to run snif
 ex1 <- Comp.Mix(y=dat$y, x=dat$x, z=dat$z, test.pct=0.5, var.select = TRUE, interaction = FALSE, covariates.forcein = FALSE, bkmr.pip=0.5, seed=2023)
 ```
 Results include exposures and covariates that are selected and their coefficients  by Lasso and Elastic-net, as well as sum-squared errors and correlations calculated from the testing data for model comparisons.
